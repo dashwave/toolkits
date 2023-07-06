@@ -52,8 +52,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v0.0.3-rev-2  # Replace with your new release tag
-          release_name: cli-release  # Replace with your new release name
+          tag_name: v0.0.0-rev-3  # Replace with your new release tag
+          release_name: dw-cli-release  # Replace with your new release name
           draft: false
           prerelease: false
 
@@ -66,3 +66,33 @@ jobs:
           asset_path: artifacts/dw_darwin_amd64.tar.gz
           asset_name: dw_darwin_amd64.tar.gz
           asset_content_type: application/gzip
+      
+      - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: artifacts/dw_darwin_arm64.tar.gz
+        asset_name: dw_darwin_arm64.tar.gz
+        asset_content_type: application/gzip
+      
+      - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: artifacts/dw_linux_amd64.tar.gz
+        asset_name: dw_linux-amd64.tar.gz
+        asset_content_type: application/gzip
+
+      - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: artifacts/dw_linux_arm64.tar.gz
+        asset_name: dw_linux_arm64.tar.gz
+        asset_content_type: application/gzip
