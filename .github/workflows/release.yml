@@ -27,6 +27,7 @@ jobs:
         run: |
           mkdir artifacts
           cd artifacts
+          sudo apt-get install jq
           curl -s -H "Authorization: token $GITHUB_TOKEN" \
             https://api.github.com/repos/$OWNER/$REPO/releases/tags/$TAG \
             | jq -r ".assets[] | .browser_download_url" \
