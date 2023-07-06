@@ -27,8 +27,24 @@ jobs:
         run: |
           mkdir artifacts
           cd artifacts
-          curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            https://api.github.com/repos/$OWNER/$REPO/releases/tags/$TAG \
+          # Get the release information.
+          RELEASE_DATA=$(curl -sH "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/$OWNER/$REPO/releases/tags/$TAG")
+
+          # Get the count of assets in the release.
+          ASSET_COUNT=$(echo $RELEASE_DATA | jq '.assets | length')
+
+          # Loop over the assets and download each one.
+          for (( i=0; i<$ASSET_COUNT; i++ )); do
+            ASSET_ID=$(echo $RELEASE_DATA | jq ".assets[$i].id")
+            ASSET_NAME=$(echo $RELEASE_DATA | jq -r ".assets[$i].name")
+            echo "Downloading asset: $ASSET_NAME (ID: $ASSET_ID)"
+
+            # Download the asset.
+            curl -LJO -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/octet-stream" \
+              "https://api.github.com/repos/$OWNER/$REPO/releases/assets/$ASSET_ID"
+          done
 
       - name: Create Release
         id: create_release
