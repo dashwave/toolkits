@@ -23,7 +23,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT }}  # GitHub automatically creates a GITHUB_TOKEN secret to use in your workflow
           OWNER: dashwave  # Replace with the owner of the repository
           REPO: dw-cli  # Replace with the repository name
-          TAG: v0.0.0-rev-10  # Replace with the release tag
+          TAG: v0.0.0-rev-16  # Replace with the release tag
         run: |
           mkdir artifacts
           cd artifacts
@@ -52,7 +52,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v0.0.0-rev-8  # Replace with your new release tag
+          tag_name: v0.0.0-rev-16  # Replace with your new release tag
           release_name: dw-cli-release  # Replace with your new release name
           draft: false
           prerelease: false
