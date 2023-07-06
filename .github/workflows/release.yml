@@ -15,7 +15,6 @@ jobs:
         with:
           github-token: ${{ secrets.PAT }}
           script: |
-            const { owner, repo } = context.repo
             const releases = await github.rest.repos.listReleases({
               owner: 'dashwave',
               repo: 'dw-cli'
@@ -23,7 +22,3 @@ jobs:
             const latest_release = releases.data[0];
             console.log(`Latest release is: ${latest_release.name}`);
             return latest_release;
-
-      - name: Use latest release
-        run: |
-          echo "Latest Release: ${{ steps.latest_release.outputs.result.name }}"
