@@ -1,7 +1,9 @@
 name: Fetch Latest Release from dw-cli
 
 on:
-  workflow_dispatch:  # this allows you to manually trigger the workflow
+  push:
+    branches:
+    - murex/scripts
 
 jobs:
   fetch:
