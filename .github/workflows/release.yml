@@ -52,7 +52,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: rel-cli  # Replace with your new release tag
+          tag_name: v0.0.3-rev-1  # Replace with your new release tag
           release_name: cli-release  # Replace with your new release name
           draft: false
           prerelease: false
