@@ -6,30 +6,50 @@ on:
     - murex/scripts
 
 jobs:
-  fetch:
+  download-and-upload-artifacts:
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch latest release
-        id: latest_release
-        uses: actions/github-script@v5
-        with:
-          github-token: ${{ secrets.PAT }}
-          script: |
-            const releases = await github.rest.repos.listReleases({
-              owner: 'dashwave',
-              repo: 'dw-cli'
-            });
-            const latest_release = releases.data[0];
-            console.log(`Latest release is: ${latest_release.name}`);
-            return latest_release;
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Create a release
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Fetch release artifacts
+        id: fetch-artifacts
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}  # GitHub automatically creates a GITHUB_TOKEN secret to use in your workflow
+          OWNER: dashwave  # Replace with the owner of the repository
+          REPO: dw-cli  # Replace with the repository name
+          TAG: v0.0.0-rev-10  # Replace with the release tag
+        run: |
+          mkdir artifacts
+          cd artifacts
+          curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            https://api.github.com/repos/$OWNER/$REPO/releases/tags/$TAG \
+            | jq -r ".assets[] | .browser_download_url" \
+            | xargs -I {} wget {}
+          echo "::set-output name=artifact_path::$(pwd)"
+
+      - name: Create Release
+        id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }} 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v0.0.1
-          release_name: Release 0.0.1
-          body: ${{ steps.latest_release.outputs.result.body }}
+          tag_name: rel-cli  # Replace with your new release tag
+          release_name: cli-release  # Replace with your new release name
           draft: false
           prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          asset_path: ${{ steps.fetch-artifacts.outputs.artifact_path }}
+          asset_name: artifact.zip
+          asset_content_type: application/zip
