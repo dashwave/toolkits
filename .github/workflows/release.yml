@@ -1,0 +1,98 @@
+name: Fetch Latest Release from dw-cli
+
+on:
+  push:
+    branches:
+    - murex/scripts
+
+jobs:
+  download-and-upload-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Fetch release artifacts
+        id: fetch-artifacts
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}  # GitHub automatically creates a GITHUB_TOKEN secret to use in your workflow
+          OWNER: dashwave  # Replace with the owner of the repository
+          REPO: dw-cli  # Replace with the repository name
+          TAG: v0.0.0-rev-16  # Replace with the release tag
+        run: |
+          mkdir artifacts
+          cd artifacts
+          # Get the release information.
+          RELEASE_DATA=$(curl -sH "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/$OWNER/$REPO/releases/tags/$TAG")
+
+          # Get the count of assets in the release.
+          ASSET_COUNT=$(echo $RELEASE_DATA | jq '.assets | length')
+
+          # Loop over the assets and download each one.
+          for (( i=0; i<$ASSET_COUNT; i++ )); do
+            ASSET_ID=$(echo $RELEASE_DATA | jq ".assets[$i].id")
+            ASSET_NAME=$(echo $RELEASE_DATA | jq -r ".assets[$i].name")
+            echo "Downloading asset: $ASSET_NAME (ID: $ASSET_ID)"
+
+            # Download the asset.
+            curl -LJO -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/octet-stream" \
+              "https://api.github.com/repos/$OWNER/$REPO/releases/assets/$ASSET_ID"
+          done
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v0.0.0-rev-16  # Replace with your new release tag
+          release_name: dw-cli-release  # Replace with your new release name
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/dw_darwin_amd64.tar.gz
+          asset_name: dw_darwin_amd64.tar.gz
+          asset_content_type: application/gzip
+      
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/dw_darwin_arm64.tar.gz
+          asset_name: dw_darwin_arm64.tar.gz
+          asset_content_type: application/gzip
+      
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/dw_linux_amd64.tar.gz
+          asset_name: dw_linux_amd64.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/dw_linux_arm64.tar.gz
+          asset_name: dw_linux_arm64.tar.gz
+          asset_content_type: application/gzip
