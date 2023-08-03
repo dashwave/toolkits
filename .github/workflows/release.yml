@@ -4,6 +4,8 @@ on:
   push:
     branches:
     - murex/scripts
+    tags:
+    - '*'
 
 jobs:
   download-and-upload-artifacts:
