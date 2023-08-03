@@ -59,6 +59,13 @@ at_exit()
 
 trap at_exit EXIT
 
+if [[ $EUID -ne 0 ]]; then
+    >&2 say_red "This script was run using a non-sudo user. Please run using sudo to proceed"
+    exit 0
+else
+    RUNNER_USERNAME=$SUDO_USER
+fi
+
 SILENT=""
 
 OS=""
@@ -85,7 +92,7 @@ esac
 if ! command -v dw >/dev/null; then
     say_blue "=== Installing Dashave CLI v${VERSION} ==="
 else
-    say_blue "=== Upgrading Dashwave CLI $(dw --version) ==="
+    say_blue "=== Upgrading Dashwave CLI $(dw version) ==="
 fi
 
 say_white "Detected OS: ${OS} with Architecture: ${ARCH}"
@@ -108,7 +115,7 @@ install_dependencies() {
     if ! command -v rsync >/dev/null; then
         if [ $OS = "darwin" ]; then
             >&2 say_white "Installing rsync"
-            brew install rsync
+            sudo -u $RUNNER_USERNAME bash -c 'brew install rsync'
 
             if ! command -v rsync >/dev/null; then
                 >&2 say_red "rsync cannot be installed. Please manually install rsync."
@@ -121,7 +128,7 @@ install_dependencies() {
     if ! command -v sshpass >/dev/null; then
         if [ $OS = "darwin" ]; then
             >&2 say_white "Installing sshpass"
-            brew install esolitos/ipa/sshpass
+            sudo -u $RUNNER_USERNAME bash -c 'brew install esolitos/ipa/sshpass'
 
             if ! command -v sshpass >/dev/null; then
                 >&2 say_red "sshpass cannot be installed. Please manually install sshpass."
@@ -146,14 +153,17 @@ install_dependencies() {
 }
 
 BINARY_NAME="dw"
+# BINARY_NAME="/Users/supradeux/Dashwave/dw-cli/build/dw-dev"
 BINARY_VERSION=$(curl -s https://api.github.com/repos/dashwave/toolkits/releases/latest | grep "tag_name" | cut -d '"' -f 4 | tr -d '[:space:][:cntrl:]')
 # BINARY_VERSION=v0.0.1-alpha-rev-1
+# RUNNER_USERNAME=$(sudo -u $USERNAME whoami)
 TAR_NAME=dw_${OS}_${ARCH}.tar.gz
 TAR_URL="https://github.com/dashwave/toolkits/releases/download/${BINARY_VERSION}/${TAR_NAME}"
 BINARY_DEST="${HOME}/.dw-cli/bin"
 TARGET_FILE="${BINARY_DEST}/${BINARY_NAME}"
 BINLOCATION="/usr/local/bin"
-SUCCESS_CMD="${BINLOCATION}/${BINARY_NAME} --version"
+SUCCESS_CMD="${BINLOCATION}/${BINARY_NAME} version"
+CONFIG_CMD="${BINLOCATION}/${BINARY_NAME} config -v ${BINARY_VERSION}"
 
 download_dwcli() {
     # If `~/.dw-cli/bin exists, clear it out
@@ -233,6 +243,7 @@ install_dwcli() {
         fi
 
         ${SUCCESS_CMD}
+        ${CONFIG_CMD}
     fi
 }
 
