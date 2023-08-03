@@ -249,6 +249,9 @@ install_dwcli() {
         fi
 
         sudo -u $RUNNER_USERNAME bash -c '${CONFIG_CMD}'
+
+        chown -R $RUNNER_USERNAME ${HOME}/.dw-cli
+
         sudo -u $RUNNER_USERNAME bash -c '${SUCCESS_CMD}'
     fi
 }
