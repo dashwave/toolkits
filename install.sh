@@ -111,6 +111,12 @@ check_and_install_package_manager() {
     fi
 }
 
+cleanup_existing_legacy_dw_installation() {
+    if [ $OS = "darwin" ]; then
+        sudo -u $RUNNER_USERNAME bash -c 'brew remove dw'
+    fi
+}
+
 install_dependencies() {
     if ! command -v rsync >/dev/null; then
         if [ $OS = "darwin" ]; then
@@ -214,14 +220,14 @@ install_dwcli() {
 
         if [ ! -w "$BINLOCATION/$BINARY_NAME" ] && [ -f "$BINLOCATION/$BINARY_NAME" ]; then
 
-        >&2 say_red
-        >&2 say_red "================================================================"
-        >&2 say_red "  $BINLOCATION/$BINARY_NAME already exists and is not writeable"
-        >&2 say_red "  by the current user.  Please adjust the binary ownership"
-        >&2 say_red "  or run sh/bash with sudo."
-        >&2 say_red "================================================================"
-        >&2 say_red
-        exit 1
+            >&2 say_red
+            >&2 say_red "================================================================"
+            >&2 say_red "  $BINLOCATION/$BINARY_NAME already exists and is not writeable"
+            >&2 say_red "  by the current user.  Please adjust the binary ownership"
+            >&2 say_red "  or run sh/bash with sudo."
+            >&2 say_red "================================================================"
+            >&2 say_red
+            exit 1
 
         fi
 
@@ -248,6 +254,7 @@ install_dwcli() {
 }
 
 check_and_install_package_manager
+cleanup_existing_legacy_dw_installation
 install_dependencies
 download_dwcli
 install_dwcli
