@@ -248,8 +248,8 @@ install_dwcli() {
             fi
         fi
 
-        ${CONFIG_CMD}
-        ${SUCCESS_CMD}
+        sudo -u $RUNNER_USERNAME bash -c '${CONFIG_CMD}'
+        sudo -u $RUNNER_USERNAME bash -c '${SUCCESS_CMD}'
     fi
 }
 
