@@ -113,7 +113,7 @@ check_and_install_package_manager() {
 
 cleanup_existing_legacy_dw_installation() {
     if [ $OS = "darwin" ]; then
-        sudo -u $RUNNER_USERNAME bash -c 'brew remove dw'
+        sudo -u $RUNNER_USERNAME bash -c 'brew remove dw > /dev/null 2>&1 || true'
     fi
 }
 
@@ -248,8 +248,8 @@ install_dwcli() {
             fi
         fi
 
-        ${SUCCESS_CMD}
         ${CONFIG_CMD}
+        ${SUCCESS_CMD}
     fi
 }
 
