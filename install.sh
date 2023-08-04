@@ -161,6 +161,7 @@ install_dependencies() {
 BINARY_NAME="dw"
 # BINARY_NAME="/Users/supradeux/Dashwave/dw-cli/build/dw-dev"
 BINARY_VERSION=$(curl -s https://api.github.com/repos/dashwave/toolkits/releases/latest | grep "tag_name" | cut -d '"' -f 4 | tr -d '[:space:][:cntrl:]')
+TRIMMED_BINARY_VERSION=${BINARY_VERSION#v}
 # BINARY_VERSION=v0.0.1-alpha-rev-1
 # RUNNER_USERNAME=$(sudo -u $USERNAME whoami)
 TAR_NAME=dw_${OS}_${ARCH}.tar.gz
@@ -169,7 +170,7 @@ BINARY_DEST="${HOME}/.dw-cli/bin"
 TARGET_FILE="${BINARY_DEST}/${BINARY_NAME}"
 BINLOCATION="/usr/local/bin"
 SUCCESS_CMD="${BINLOCATION}/${BINARY_NAME} version"
-CONFIG_CMD="${BINLOCATION}/${BINARY_NAME} config -v ${BINARY_VERSION}"
+CONFIG_CMD="${BINLOCATION}/${BINARY_NAME} config -v ${TRIMMED_BINARY_VERSION}"
 
 download_dwcli() {
     # If `~/.dw-cli/bin exists, clear it out
