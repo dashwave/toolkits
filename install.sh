@@ -53,7 +53,7 @@ at_exit()
     if [ "$?" -ne 0 ]; then
         >&2 say_red
         >&2 say_red "We're sorry, but it looks like something might have gone wrong during installation."
-        >&2 say_red "If you need help, feel free to react out to us on hello@dashwave.io"
+        >&2 say_red "If you need help, feel free to reach out to us on hello@dashwave.io"
     fi
 }
 
@@ -89,10 +89,21 @@ case $(uname -m) in
         ;;
 esac
 
+BINARY_NAME="dw"
+BINARY_VERSION=$(curl -s https://api.github.com/repos/dashwave/toolkits/releases/latest | grep "tag_name" | cut -d '"' -f 4 | tr -d '[:space:][:cntrl:]')
+TRIMMED_BINARY_VERSION=${BINARY_VERSION#v}
+TAR_NAME=dw_${OS}_${ARCH}.tar.gz
+TAR_URL="https://github.com/dashwave/toolkits/releases/download/${BINARY_VERSION}/${TAR_NAME}"
+BINARY_DEST="${HOME}/.dw-cli/bin"
+TARGET_FILE="${BINARY_DEST}/${BINARY_NAME}"
+BINLOCATION="/usr/local/bin"
+SUCCESS_CMD="${BINLOCATION}/${BINARY_NAME} version"
+CONFIG_CMD="${BINLOCATION}/${BINARY_NAME} config -v ${TRIMMED_BINARY_VERSION}"
+
 if ! command -v dw >/dev/null; then
-    say_blue "=== Installing Dashave CLI v${VERSION} ==="
+    say_blue "=== Installing Dashwave CLI ${BINARY_VERSION} ==="
 else
-    say_blue "=== Upgrading Dashwave CLI $(dw version) ==="
+    say_blue "=== Upgrading Dashwave CLI ${BINARY_VERSION} ==="
 fi
 
 say_white "Detected OS: ${OS} with Architecture: ${ARCH}"
@@ -158,20 +169,6 @@ install_dependencies() {
     fi
 }
 
-BINARY_NAME="dw"
-# BINARY_NAME="/Users/supradeux/Dashwave/dw-cli/build/dw-dev"
-BINARY_VERSION=$(curl -s https://api.github.com/repos/dashwave/toolkits/releases/latest | grep "tag_name" | cut -d '"' -f 4 | tr -d '[:space:][:cntrl:]')
-TRIMMED_BINARY_VERSION=${BINARY_VERSION#v}
-# BINARY_VERSION=v0.0.1-alpha-rev-1
-# RUNNER_USERNAME=$(sudo -u $USERNAME whoami)
-TAR_NAME=dw_${OS}_${ARCH}.tar.gz
-TAR_URL="https://github.com/dashwave/toolkits/releases/download/${BINARY_VERSION}/${TAR_NAME}"
-BINARY_DEST="${HOME}/.dw-cli/bin"
-TARGET_FILE="${BINARY_DEST}/${BINARY_NAME}"
-BINLOCATION="/usr/local/bin"
-SUCCESS_CMD="${BINLOCATION}/${BINARY_NAME} version"
-CONFIG_CMD="${BINLOCATION}/${BINARY_NAME} config -v ${TRIMMED_BINARY_VERSION}"
-
 download_dwcli() {
     # If `~/.dw-cli/bin exists, clear it out
     if [ -e "${HOME}/.dw-cli/bin" ]; then
@@ -185,7 +182,7 @@ download_dwcli() {
     # shellcheck disable=SC2046
     # https://github.com/koalaman/shellcheck/wiki/SC2046
     # Disable to allow the `--silent` option to be omitted.
-    if wget --tries=3 -q "${TAR_URL}"; then
+    if wget --tries=3 -O "${TAR_NAME}" -q "${TAR_URL}"; then
     # if curl -LO https://github.com/dashwave/toolkits/releases/download/v0.0.1-alpha/dw
         tar -xvf $TAR_NAME -C $BINARY_DEST
         rm $TAR_NAME
