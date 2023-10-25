@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 RESET="\\033[0m"
@@ -137,9 +137,11 @@ install_dependencies() {
             if ! command -v rsync >/dev/null; then
                 >&2 say_red "rsync cannot be installed. Please manually install rsync."
             fi
+        else
+            >&2 say_red "rsync is a prerequisite to run dw. Please manually install rsync."
         fi
     else
-        >&2 say_white "rsync is already installed. Skipping."
+        >&2 say_yellow "rsync is already installed. Skipping."
     fi
 
     if ! command -v sshpass >/dev/null; then
@@ -150,9 +152,11 @@ install_dependencies() {
             if ! command -v sshpass >/dev/null; then
                 >&2 say_red "sshpass cannot be installed. Please manually install sshpass."
             fi
+        else
+            >&2 say_red "sshpass is a prerequisite to run dw. Please manually install sshpass."
         fi
     else
-        >&2 say_white "sshpass is already installed. Skipping."
+        >&2 say_yellow "sshpass is already installed. Skipping."
     fi
 
     if ! command -v wget >/dev/null; then
@@ -163,9 +167,11 @@ install_dependencies() {
             if ! command -v wget >/dev/null; then
                 >&2 say_red "wget cannot be installed. Please manually install wget."
             fi
+        else
+            >&2 say_red "wget is a prerequisite to run dw. Please manually install wget"
         fi
     else
-        >&2 say_white "wget is already installed. Skipping."
+        >&2 say_yellow "wget is already installed. Skipping."
     fi
 }
 
