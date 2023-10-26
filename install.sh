@@ -89,6 +89,19 @@ case $(uname -m) in
         ;;
 esac
 
+DISTRO=""
+# Check if /etc/os-release file exists
+if [ -f /etc/os-release ]; then
+    # Source the os-release file to access its variables
+    . /etc/os-release
+
+    # Check if the ID field contains "debian"
+    if [[ $ID == "debian" || $ID_LIKE == "debian" ]]; then
+        DISTRO="debian"
+    fi
+
+fi
+
 BINARY_NAME="dw"
 BINARY_VERSION=$(curl -s https://api.github.com/repos/dashwave/toolkits/releases/latest | grep "tag_name" | cut -d '"' -f 4 | tr -d '[:space:][:cntrl:]')
 TRIMMED_BINARY_VERSION=${BINARY_VERSION#v}
@@ -137,6 +150,13 @@ install_dependencies() {
             if ! command -v rsync >/dev/null; then
                 >&2 say_red "rsync cannot be installed. Please manually install rsync."
             fi
+        elif [ $OS = "linux" -a $DISTRO = "debian" ]; then
+            >&2 say_white "Installing rsync"
+            sudo apt-get -y -qq install rsync
+
+            if ! command -v rsync >/dev/null; then
+                >&2 say_red "rsync cannot be installed. Please manually install rsync."
+            fi
         else
             >&2 say_red "rsync is a prerequisite to run dw. Please manually install rsync."
         fi
@@ -152,6 +172,13 @@ install_dependencies() {
             if ! command -v sshpass >/dev/null; then
                 >&2 say_red "sshpass cannot be installed. Please manually install sshpass."
             fi
+        elif [ $OS = "linux" -a $DISTRO = "debian" ]; then
+            >&2 say_white "Installing sshpass"
+            sudo apt-get -y -qq install sshpass
+
+            if ! command -v sshpass >/dev/null; then
+                >&2 say_red "sshpass cannot be installed. Please manually install sshpass."
+            fi
         else
             >&2 say_red "sshpass is a prerequisite to run dw. Please manually install sshpass."
         fi
@@ -163,6 +190,13 @@ install_dependencies() {
         if [ $OS = "darwin" ]; then
             >&2 say_white "Installing wget"
             brew install wget
+
+            if ! command -v wget >/dev/null; then
+                >&2 say_red "wget cannot be installed. Please manually install wget."
+            fi
+        elif [ $OS = "linux" -a $DISTRO = "debian" ]; then
+            >&2 say_white "Installing wget"
+            sudo apt-get -y -qq install wget
 
             if ! command -v wget >/dev/null; then
                 >&2 say_red "wget cannot be installed. Please manually install wget."
