@@ -207,6 +207,50 @@ install_dependencies() {
     else
         >&2 say_yellow "wget is already installed. Skipping."
     fi
+
+    if ! command -v adb >/dev/null; then
+        if [ $OS = "darwin" ]; then
+            >&2 say_white "Installing adb"
+            brew install --cask android-platform-tools
+
+            if ! command -v adb >/dev/null; then
+                >&2 say_red "adb cannot be installed. Please manually install adb."
+            fi
+        elif [ $OS = "linux" -a $DISTRO = "debian" ]; then
+            >&2 say_white "Installing adb"
+            sudo apt-get -y -qq install android-tools-adb
+
+            if ! command -v adb >/dev/null; then
+                >&2 say_red "adb cannot be installed. Please manually install adb."
+            fi
+        else
+            >&2 say_red "adb is a prerequisite to run dw. Please manually install adb"
+        fi
+    else
+        >&2 say_yellow "adb is already installed. Skipping."
+    fi
+
+    if ! command -v scrcpy >/dev/null; then
+        if [ $OS = "darwin" ]; then
+            >&2 say_white "Installing scrcpy"
+            brew install scrcpy
+
+            if ! command -v scrcpy >/dev/null; then
+                >&2 say_red "scrcpy cannot be installed. Please manually install scrcpy."
+            fi
+        elif [ $OS = "linux" -a $DISTRO = "debian" ]; then
+            >&2 say_white "Installing scrcpy"
+            sudo apt-get -y -qq install scrcpy
+
+            if ! command -v scrcpy >/dev/null; then
+                >&2 say_red "scrcpy cannot be installed. Please manually install scrcpy."
+            fi
+        else
+            >&2 say_red "scrcpy is a prerequisite to run dw. Please manually install scrcpy"
+        fi
+    else
+        >&2 say_yellow "scrcpy is already installed. Skipping."
+    fi
 }
 
 download_dwcli() {
@@ -294,9 +338,24 @@ install_dwcli() {
     fi
 }
 
+setup_dependencies() {
+    TOOL_DEST="${HOME}/.dw-cli/tools"
+    if [ -e $TOOL_DEST ]; then
+        rm -rf $TOOL_DEST
+    fi
+
+    mkdir -p $TOOL_DEST
+
+    tools=("adb" "scrcpy" "wget" "sshpass" "rsync")
+    for tool in "${tools[@]}"; do
+        ln -s $(which ${tool}) "${TOOL_DEST}/${tool}"
+    done
+}
+
 check_and_install_package_manager
 cleanup_existing_legacy_dw_installation
 install_dependencies
+setup_dependencies
 download_dwcli
 install_dwcli
 
