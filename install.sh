@@ -218,7 +218,7 @@ install_dependencies() {
             fi
         elif [ $OS = "linux" -a $DISTRO = "debian" ]; then
             >&2 say_white "Installing adb"
-            sudo apt-get -y -qq install android-sdk-build-tools
+            sudo apt-get -y -qq install android-tools-adb
 
             if ! command -v adb >/dev/null; then
                 >&2 say_red "adb cannot be installed. Please manually install adb."
