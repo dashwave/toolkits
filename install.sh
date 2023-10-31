@@ -10,9 +10,13 @@ WHITE="\\033[37;1m"
 
 print_unsupported_platform()
 {
-    >&2 say_red "error: We're sorry, but it looks like the Dashwave CLI is not supported on your platform"
-    >&2 say_red "       We support 64-bit versions of Linux and macOS and are interested in supporting"
-    >&2 say_red "       more platforms.  Please reach out to us at hello@dashwave.io"
+    >&2 say_red "error: We're sorry, but it looks like installation of the Dashwave CLI"
+    >&2 say_red "       using this script is not supported on your platform. We support"
+    >&2 say_red "       debian based Linux and are interested in supporting more"
+    >&2 say_red "       platforms. Please reach out to us at hello@dashwave.io"
+    >&2 say_yellow
+    >&2 say_yellow "If you are using macOS, prefer installing using the brew package manager."
+    >&2 say_yellow "Refer to the docs."
 }
 
 say_green()
@@ -59,19 +63,12 @@ at_exit()
 
 trap at_exit EXIT
 
-if [[ $EUID -ne 0 ]]; then
-    >&2 say_red "This script was run using a non-sudo user. Please run using sudo to proceed"
-    exit 0
-else
-    RUNNER_USERNAME=$SUDO_USER
-fi
-
 SILENT=""
 
 OS=""
 case $(uname) in
     "Linux") OS="linux";;
-    "Darwin") OS="darwin";;
+#    "Darwin") OS="darwin";;
     *)
         print_unsupported_platform
         exit 1
@@ -101,6 +98,14 @@ if [ -f /etc/os-release ]; then
     fi
 
 fi
+
+if [[ $EUID -ne 0 ]]; then
+    >&2 say_red "This script was run using a non-sudo user. Please run using sudo to proceed"
+    exit 0
+else
+    RUNNER_USERNAME=$SUDO_USER
+fi
+
 
 BINARY_NAME="dw"
 BINARY_VERSION=$(curl -s https://api.github.com/repos/dashwave/toolkits/releases/latest | grep "tag_name" | cut -d '"' -f 4 | tr -d '[:space:][:cntrl:]')
