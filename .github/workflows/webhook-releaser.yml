@@ -72,8 +72,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}  # Replace with your new release tag
-          release_name: Release ${{ github.ref }}  # Replace with your new release name
+          tag_name: ${{ github.event.client_payload.tag_name }}  # Replace with your new release tag
+          release_name: Release ${{ github.event.client_payload.tag_name }}  # Replace with your new release name
           draft: false
           prerelease: false
 
