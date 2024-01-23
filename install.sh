@@ -135,22 +135,20 @@ download_dwcli() {
 
     say_white "+ Downloading ${TAR_URL}..."
 
-    tar -xvf dw_darwin_arm64.tar.gz -C $BINARY_DEST
-
     # shellcheck disable=SC2046
     # https://github.com/koalaman/shellcheck/wiki/SC2046
     # Disable to allow the `--silent` option to be omitted.
-    # if wget --tries=3 -O "${TAR_NAME}" -q "${TAR_URL}"; then
-    # # if curl -LO https://github.com/dashwave/toolkits/releases/download/v0.0.1-alpha/dw
-    #     tar -xvf $TAR_NAME -C $BINARY_DEST
-    #     rm $TAR_NAME
-    #     chmod +x $TARGET_FILE
-    # else
-    #     >&2 say_red "error: failed to download ${TAR_URL}"
-    #     >&2 say_red "       check your internet and try again; if the problem persists, file an"
-    #     >&2 say_red "       issue at hello@dashwave.io"
-    #     exit 1
-    # fi
+    if wget --tries=3 -O "${TAR_NAME}" -q "${TAR_URL}"; then
+    # if curl -LO https://github.com/dashwave/toolkits/releases/download/v0.0.1-alpha/dw
+        tar -xvf $TAR_NAME -C $BINARY_DEST
+        rm $TAR_NAME
+        chmod +x $TARGET_FILE
+    else
+        >&2 say_red "error: failed to download ${TAR_URL}"
+        >&2 say_red "       check your internet and try again; if the problem persists, file an"
+        >&2 say_red "       issue at hello@dashwave.io"
+        exit 1
+    fi
 }
 
 setup_dependencies() {
@@ -171,19 +169,8 @@ setup_dependencies() {
     done
 }
 
-# We don't need any package managers now
-# check_and_install_package_manager
-# cleanup_existing_legacy_dw_installation
-
-# Skip this step because the dependencies are fetched as a package
-# install_dependencies
-
 download_dwcli
-
 setup_dependencies
-
-# And we don't need to install too because the CLI won't be used globally, just within the context of the plugin
-# install_dwcli
 
 # say_blue
 # say_blue "=== dw-cli is now installed! ==="
