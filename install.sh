@@ -68,7 +68,7 @@ SILENT=""
 OS=""
 case $(uname) in
     "Linux") OS="linux";;
-#    "Darwin") OS="darwin";;
+   "Darwin") OS="darwin";;
     *)
         print_unsupported_platform
         exit 1
@@ -86,27 +86,6 @@ case $(uname -m) in
         ;;
 esac
 
-DISTRO=""
-# Check if /etc/os-release file exists
-if [ -f /etc/os-release ]; then
-    # Source the os-release file to access its variables
-    . /etc/os-release
-
-    # Check if the ID field contains "debian"
-    if [[ $ID == "debian" || $ID_LIKE == "debian" ]]; then
-        DISTRO="debian"
-    fi
-
-fi
-
-if [[ $EUID -ne 0 ]]; then
-    >&2 say_red "This script was run using a non-sudo user. Please run using sudo to proceed"
-    exit 0
-else
-    RUNNER_USERNAME=$SUDO_USER
-fi
-
-
 BINARY_NAME="dw"
 BINARY_VERSION=$(curl -s https://api.github.com/repos/dashwave/toolkits/releases/latest | grep "tag_name" | cut -d '"' -f 4 | tr -d '[:space:][:cntrl:]')
 TRIMMED_BINARY_VERSION=${BINARY_VERSION#v}
@@ -114,9 +93,9 @@ TAR_NAME=dw_${OS}_${ARCH}.tar.gz
 TAR_URL="https://github.com/dashwave/toolkits/releases/download/${BINARY_VERSION}/${TAR_NAME}"
 BINARY_DEST="${HOME}/.dw-cli/bin"
 TARGET_FILE="${BINARY_DEST}/${BINARY_NAME}"
-BINLOCATION="/usr/local/bin"
-SUCCESS_CMD="${BINLOCATION}/${BINARY_NAME} version"
-CONFIG_CMD="${BINLOCATION}/${BINARY_NAME} config -v ${TRIMMED_BINARY_VERSION}"
+# BINLOCATION="/usr/local/bin"
+SUCCESS_CMD="${TARGET_FILE}/${BINARY_NAME} version"
+CONFIG_CMD="${TARGET_FILE}/${BINARY_NAME} config -v ${TRIMMED_BINARY_VERSION}"
 
 if ! command -v dw >/dev/null; then
     say_blue "=== Installing Dashwave CLI ${BINARY_VERSION} ==="
@@ -146,118 +125,6 @@ cleanup_existing_legacy_dw_installation() {
     fi
 }
 
-install_dependencies() {
-    if ! command -v rsync >/dev/null; then
-        if [ $OS = "darwin" ]; then
-            >&2 say_white "Installing rsync"
-            sudo -u $RUNNER_USERNAME bash -c 'brew install rsync'
-
-            if ! command -v rsync >/dev/null; then
-                >&2 say_red "rsync cannot be installed. Please manually install rsync."
-            fi
-        elif [ $OS = "linux" -a $DISTRO = "debian" ]; then
-            >&2 say_white "Installing rsync"
-            sudo apt-get -y -qq install rsync
-
-            if ! command -v rsync >/dev/null; then
-                >&2 say_red "rsync cannot be installed. Please manually install rsync."
-            fi
-        else
-            >&2 say_red "rsync is a prerequisite to run dw. Please manually install rsync."
-        fi
-    else
-        >&2 say_yellow "rsync is already installed. Skipping."
-    fi
-
-    if ! command -v sshpass >/dev/null; then
-        if [ $OS = "darwin" ]; then
-            >&2 say_white "Installing sshpass"
-            sudo -u $RUNNER_USERNAME bash -c 'brew install esolitos/ipa/sshpass'
-
-            if ! command -v sshpass >/dev/null; then
-                >&2 say_red "sshpass cannot be installed. Please manually install sshpass."
-            fi
-        elif [ $OS = "linux" -a $DISTRO = "debian" ]; then
-            >&2 say_white "Installing sshpass"
-            sudo apt-get -y -qq install sshpass
-
-            if ! command -v sshpass >/dev/null; then
-                >&2 say_red "sshpass cannot be installed. Please manually install sshpass."
-            fi
-        else
-            >&2 say_red "sshpass is a prerequisite to run dw. Please manually install sshpass."
-        fi
-    else
-        >&2 say_yellow "sshpass is already installed. Skipping."
-    fi
-
-    if ! command -v wget >/dev/null; then
-        if [ $OS = "darwin" ]; then
-            >&2 say_white "Installing wget"
-            brew install wget
-
-            if ! command -v wget >/dev/null; then
-                >&2 say_red "wget cannot be installed. Please manually install wget."
-            fi
-        elif [ $OS = "linux" -a $DISTRO = "debian" ]; then
-            >&2 say_white "Installing wget"
-            sudo apt-get -y -qq install wget
-
-            if ! command -v wget >/dev/null; then
-                >&2 say_red "wget cannot be installed. Please manually install wget."
-            fi
-        else
-            >&2 say_red "wget is a prerequisite to run dw. Please manually install wget"
-        fi
-    else
-        >&2 say_yellow "wget is already installed. Skipping."
-    fi
-
-    if ! command -v adb >/dev/null; then
-        if [ $OS = "darwin" ]; then
-            >&2 say_white "Installing adb"
-            brew install --cask android-platform-tools
-
-            if ! command -v adb >/dev/null; then
-                >&2 say_red "adb cannot be installed. Please manually install adb."
-            fi
-        elif [ $OS = "linux" -a $DISTRO = "debian" ]; then
-            >&2 say_white "Installing adb"
-            sudo apt-get -y -qq install android-tools-adb
-
-            if ! command -v adb >/dev/null; then
-                >&2 say_red "adb cannot be installed. Please manually install adb."
-            fi
-        else
-            >&2 say_red "adb is a prerequisite to run dw. Please manually install adb"
-        fi
-    else
-        >&2 say_yellow "adb is already installed. Skipping."
-    fi
-
-    if ! command -v scrcpy >/dev/null; then
-        if [ $OS = "darwin" ]; then
-            >&2 say_white "Installing scrcpy"
-            brew install scrcpy
-
-            if ! command -v scrcpy >/dev/null; then
-                >&2 say_red "scrcpy cannot be installed. Please manually install scrcpy."
-            fi
-        elif [ $OS = "linux" -a $DISTRO = "debian" ]; then
-            >&2 say_white "Installing scrcpy"
-            sudo apt-get -y -qq install scrcpy
-
-            if ! command -v scrcpy >/dev/null; then
-                >&2 say_red "scrcpy cannot be installed. Please manually install scrcpy."
-            fi
-        else
-            >&2 say_red "scrcpy is a prerequisite to run dw. Please manually install scrcpy"
-        fi
-    else
-        >&2 say_yellow "scrcpy is already installed. Skipping."
-    fi
-}
-
 download_dwcli() {
     # If `~/.dw-cli/bin exists, clear it out
     if [ -e "${HOME}/.dw-cli/bin" ]; then
@@ -268,101 +135,55 @@ download_dwcli() {
 
     say_white "+ Downloading ${TAR_URL}..."
 
+    tar -xvf dw_darwin_arm64.tar.gz -C $BINARY_DEST
+
     # shellcheck disable=SC2046
     # https://github.com/koalaman/shellcheck/wiki/SC2046
     # Disable to allow the `--silent` option to be omitted.
-    if wget --tries=3 -O "${TAR_NAME}" -q "${TAR_URL}"; then
-    # if curl -LO https://github.com/dashwave/toolkits/releases/download/v0.0.1-alpha/dw
-        tar -xvf $TAR_NAME -C $BINARY_DEST
-        rm $TAR_NAME
-        chmod +x $TARGET_FILE
-    else
-        >&2 say_red "error: failed to download ${TAR_URL}"
-        >&2 say_red "       check your internet and try again; if the problem persists, file an"
-        >&2 say_red "       issue at hello@dashwave.io"
-        exit 1
-    fi
-}
-
-install_dwcli() {
-    if [ ! -w "$BINLOCATION" ]; then
-        >&2 say_red
-        >&2 say_red "============================================================"
-        >&2 say_red "  The script was run as a user who is unable to write"
-        >&2 say_red "  to $BINLOCATION. To complete the installation the"
-        >&2 say_red "  following commands may need to be run manually."
-        >&2 say_red "============================================================"
-        >&2 say_red
-        >&2 say_red "  sudo cp $TARGET_FILE $BINLOCATION/$BINARY_NAME"
-
-        if [ -n "$ALIAS_NAME" ]; then
-            >&2 say_red "  sudo ln -sf $TARGET_FILE $BINLOCATION/$ALIAS_NAME"
-        fi
-
-        >&2 say_red
-
-    else
-        >&2 say_white
-        >&2 say_white "Running with sufficient permissions to attempt to move ${BINARY_NAME} to ${BINLOCATION}"
-
-        if [ ! -w "$BINLOCATION/$BINARY_NAME" ] && [ -f "$BINLOCATION/$BINARY_NAME" ]; then
-
-            >&2 say_red
-            >&2 say_red "================================================================"
-            >&2 say_red "  $BINLOCATION/$BINARY_NAME already exists and is not writeable"
-            >&2 say_red "  by the current user.  Please adjust the binary ownership"
-            >&2 say_red "  or run sh/bash with sudo."
-            >&2 say_red "================================================================"
-            >&2 say_red
-            exit 1
-
-        fi
-
-        mv $TARGET_FILE $BINLOCATION/$BINARY_NAME
-
-        if [ "$?" = "0" ]; then
-            >&2 say_green "New version of ${BINARY_NAME} installed to ${BINLOCATION}"
-        fi
-
-        if [ -e "${TARGET_FILE}" ]; then
-            rm "${TARGET_FILE}"
-        fi
-
-        if [ -n "$ALIAS_NAME" ]; then
-            if [ ! -L $BINLOCATION/$ALIAS_NAME ]; then
-                ln -s $BINLOCATION/$BINARY_NAME $BINLOCATION/$ALIAS_NAME
-                >&2 say_white "Creating alias '$ALIAS_NAME' for '$BINARY_NAME'."
-            fi
-        fi
-
-        ${CONFIG_CMD}
-
-        chown -R $RUNNER_USERNAME ${HOME}/.dw-cli
-
-        ${SUCCESS_CMD}
-    fi
+    # if wget --tries=3 -O "${TAR_NAME}" -q "${TAR_URL}"; then
+    # # if curl -LO https://github.com/dashwave/toolkits/releases/download/v0.0.1-alpha/dw
+    #     tar -xvf $TAR_NAME -C $BINARY_DEST
+    #     rm $TAR_NAME
+    #     chmod +x $TARGET_FILE
+    # else
+    #     >&2 say_red "error: failed to download ${TAR_URL}"
+    #     >&2 say_red "       check your internet and try again; if the problem persists, file an"
+    #     >&2 say_red "       issue at hello@dashwave.io"
+    #     exit 1
+    # fi
 }
 
 setup_dependencies() {
+    # Move the tools from ~/.dw-cli/bin to ~/.dw-cli/tools
+
+    # Check if tools already exist, clear them off
     TOOL_DEST="${HOME}/.dw-cli/tools"
     if [ -e $TOOL_DEST ]; then
         rm -rf $TOOL_DEST
     fi
 
+    # Recreate the tools destination
     mkdir -p $TOOL_DEST
 
-    tools=("adb" "scrcpy" "wget" "sshpass" "rsync")
+    tools=("rsync" "emux-go")
     for tool in "${tools[@]}"; do
-        ln -s $(which ${tool}) "${TOOL_DEST}/${tool}"
+        mv "${BINARY_DEST}/${tool}" "${TOOL_DEST}/${tool}"
     done
 }
 
-check_and_install_package_manager
-cleanup_existing_legacy_dw_installation
-install_dependencies
-setup_dependencies
+# We don't need any package managers now
+# check_and_install_package_manager
+# cleanup_existing_legacy_dw_installation
+
+# Skip this step because the dependencies are fetched as a package
+# install_dependencies
+
 download_dwcli
-install_dwcli
+
+setup_dependencies
+
+# And we don't need to install too because the CLI won't be used globally, just within the context of the plugin
+# install_dwcli
 
 # say_blue
 # say_blue "=== dw-cli is now installed! ==="
