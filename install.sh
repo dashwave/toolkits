@@ -135,6 +135,9 @@ download_dwcli() {
 
     say_white "+ Downloading ${TAR_URL}..."
 
+    export LANG=en_US.UTF-8
+    export LC_ALL=$LANG
+
     # shellcheck disable=SC2046
     # https://github.com/koalaman/shellcheck/wiki/SC2046
     # Disable to allow the `--silent` option to be omitted.
