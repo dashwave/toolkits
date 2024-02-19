@@ -141,10 +141,10 @@ download_dwcli() {
     # shellcheck disable=SC2046
     # https://github.com/koalaman/shellcheck/wiki/SC2046
     # Disable to allow the `--silent` option to be omitted.
-    if curl --retry 3 -o "${TAR_NAME}" -sSL "${TAR_URL}"; then
+    if curl --retry 3 -o "${HOME}/.dw-cli/bin/${TAR_NAME}" -sSL "${TAR_URL}"; then
     # if curl -LO https://github.com/dashwave/toolkits/releases/download/v0.0.1-alpha/dw
-        tar -xvf $TAR_NAME -C $BINARY_DEST
-        rm $TAR_NAME
+        tar -xvf ${HOME}/.dw-cli/bin/${TAR_NAME} -C ${BINARY_DEST}
+        rm ${HOME}/.dw-cli/bin/${TAR_NAME}
         chmod +x $TARGET_FILE
     else
         >&2 say_red "error: failed to download ${TAR_URL}"
